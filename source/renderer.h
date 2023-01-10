@@ -1,11 +1,14 @@
 #pragma once
 
-#include <SDL.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "ray.h"
 #include "scene.h"
+
+class SDL_Window;
+class SDL_Renderer;
+class SDL_Texture;
 
 class Renderer {
 public:
@@ -40,6 +43,6 @@ private:
     SDL_Renderer* m_renderer;
     SDL_Texture*  m_swapBuffer;
     uint32_t*     m_frameBuffer;
-    glm::vec3     m_backColor{1.0f, 0.0f, 0.0f};
+    glm::vec3     m_backColor{0.0f, 0.0f, 0.0f};
     float         m_renderTime;
 };

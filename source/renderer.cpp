@@ -1,8 +1,15 @@
 #include "renderer.h"
 
+#include <SDL.h>
+#include <iostream>
+#include <tuple>
+
+#include "SDL_stdinc.h"
+#include "glm/fwd.hpp"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl.h"
 #include "imgui/imgui_impl_sdlrenderer.h"
+#include "ray.h"
 
 Renderer::Renderer(int viewPortWidth, int viewPortHeight)
     : m_viewPortWidth(viewPortWidth), m_viewPortHeight(viewPortHeight) {
@@ -59,9 +66,7 @@ int Renderer::Init() {
 }
 
 void Renderer::Render() {
-    bool done                = false;
-    bool show_demo_window    = true;
-    bool show_another_window = false;
+    bool done = false;
 
     while (!done) {
         SDL_Event event;
@@ -123,8 +128,26 @@ void Renderer::OnResize(uint32_t width, uint32_t height) {
 }
 
 void Renderer::PixelShader(uint32_t x, uint32_t y) {
-    glm::vec4 color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
-    DrawPixel(x, y, color);
+    Ray ray;
+    float aspect = 1.0f * m_viewPortWidth / m_viewPortHeight;
+    glm::vec2 coord = glm::vec2(x * 1.0f / m_viewPortWidth, y * 1.0f / m_viewPortHeight);
+    coord = coord * 2.0f - 1.0f;
+    coord.x *= aspect;
+    ray.origin = glm::vec3(0.0f, 0.0f, 2.0f);
+    ray.direction = glm::vec3(coord.x, coord.y, -1.0f);
+ 
+    float radius = 0.5f;
+    float a = glm::dot(ray.direction, ray.direction);
+    float b = 2.0f * glm::dot(ray.origin, ray.direction);
+    float c = glm::dot(ray.origin, ray.origin) - radius * radius;
+    float solve = b * b - 4.0f * a * c;
+
+    if(solve >= 0.0f) {
+        glm::vec4 hitColor = {1.0f, 0.0f, 0.0f, 0.0f};
+        DrawPixel(x, y, hitColor);
+        return;
+    }
+    DrawPixel(x, y, glm::vec4(m_backColor, 0.0f));
 }
 
 void Renderer::DrawPixel(int x, int y, const glm::vec4& color) {
