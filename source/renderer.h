@@ -3,13 +3,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <SDL.h>
+#include "SDL.h"
 #include "ray.h"
 #include "scene.h"
-
-class SDL_Window;
-class SDL_Renderer;
-class SDL_Texture;
 
 class Renderer {
 public:
@@ -30,7 +26,6 @@ private:
     HitPayLoad TraceRay(const Ray& ray);
     HitPayLoad ClosestHit(const Ray& ray, float hitDistance, int objectIndex);
     HitPayLoad Miss(const Ray& ray);
-    void       RenderPresent();
     void       RenderClear();
     void       RenderImage();
     void       RenderUI();

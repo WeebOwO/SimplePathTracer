@@ -80,15 +80,7 @@ void Renderer::Render() {
         }
         RenderUI();
         RenderImage();
-        RenderPresent();
     }
-}
-
-
-void Renderer::RenderPresent() {
-    SDL_UpdateTexture(m_swapBuffer, nullptr, m_frameBuffer, sizeof(uint32_t) * m_viewPortWidth);
-    SDL_RenderCopy(m_renderer, m_swapBuffer, nullptr, nullptr);
-    SDL_RenderPresent(m_renderer);
 }
 
 void Renderer::RenderClear() {
@@ -106,6 +98,9 @@ void Renderer::RenderImage() {
             PixelShader(x, y);
         }
     }
+    SDL_UpdateTexture(m_swapBuffer, nullptr, m_frameBuffer, sizeof(uint32_t) * m_viewPortWidth);
+    SDL_RenderCopy(m_renderer, m_swapBuffer, nullptr, nullptr);
+    SDL_RenderPresent(m_renderer);
 }
 
 void Renderer::RenderUI() {
@@ -149,7 +144,12 @@ void Renderer::PixelShader(uint32_t x, uint32_t y) {
         DrawPixel(x, y, hitColor);
         return;
     }
-    DrawPixel(x, y, glm::vec4(m_backColor, 0.0f));
+    float t = coord.y;
+    glm::vec4 blue = glm::vec4(0.5f, 0.7f, 1.0f, 1.0f);
+    glm::vec4 white = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    
+    glm::vec4 background = (1 - t) * blue + t * white;
+    DrawPixel(x, y, glm::vec4(background));
 }
 
 void Renderer::DrawPixel(int x, int y, const glm::vec4& color) {
