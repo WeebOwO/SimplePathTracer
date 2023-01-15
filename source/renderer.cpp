@@ -1,11 +1,7 @@
 #include "renderer.h"
 
-#include <SDL.h>
 #include <iostream>
-#include <tuple>
 
-#include "SDL_stdinc.h"
-#include "glm/fwd.hpp"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl.h"
 #include "imgui/imgui_impl_sdlrenderer.h"
@@ -55,9 +51,8 @@ int Renderer::Init() {
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     (void)io;
-    io.IniFilename = "imgui.ini";
-    ImGui::StyleColorsDark();
 
+    ImGui::StyleColorsDark();
     ImGui_ImplSDL2_InitForSDLRenderer(m_window, m_renderer);
     ImGui_ImplSDLRenderer_Init(m_renderer);
 
@@ -67,7 +62,7 @@ int Renderer::Init() {
 
 void Renderer::Render() {
     bool done = false;
-
+    //main loop
     while (!done) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -89,9 +84,8 @@ void Renderer::Render() {
     }
 }
 
+
 void Renderer::RenderPresent() {
-    ImGui::Render();
-    ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
     SDL_UpdateTexture(m_swapBuffer, nullptr, m_frameBuffer, sizeof(uint32_t) * m_viewPortWidth);
     SDL_RenderCopy(m_renderer, m_swapBuffer, nullptr, nullptr);
     SDL_RenderPresent(m_renderer);
@@ -119,6 +113,14 @@ void Renderer::RenderUI() {
     ImGui_ImplSDLRenderer_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
+
+    ImGui::Begin("FPS");
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    ImGui::End();
+
+    ImGui::Render();
+    ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
+    SDL_RenderPresent(m_renderer);
 }
 
 void Renderer::OnResize(uint32_t width, uint32_t height) {

@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <SDL.h>
 #include "ray.h"
 #include "scene.h"
 
