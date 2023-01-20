@@ -2,4 +2,4 @@
 .xmake/
 build/
 .cache/
-*.json
+compile_commands.json
