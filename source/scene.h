@@ -1,21 +1,18 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include <memory>
 #include <vector>
 
-struct Material {
-  glm::vec3 albedo{1.0f};
-  float roughness {1.0f};
-  float metallic {0.0f};
-};
 
-struct Sphere {
-  glm::vec3 position {0.0f};
-  float radius {0.5f};
-  int materialIndex {0};
-};
+#include <glm/glm.hpp>
+
+#include "geometry.h"
+#include "material.h"
 
 struct Scene {
-  std::vector<Sphere> spheres;
-  std::vector<Material> materials;
+    std::vector<std::shared_ptr<HitableObject>> objects;
+    std::vector<Material> materials;
+    void AddObject(std::shared_ptr<HitableObject> object);
+    void AddMaterial(const Material& material);
 };
+
