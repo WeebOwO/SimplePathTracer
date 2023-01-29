@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 
 #include "geometry.h"
+#include "glm/fwd.hpp"
 #include "material.h"
 
 struct Scene {

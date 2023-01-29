@@ -13,5 +13,5 @@ struct HitPayload {
     float     hitTime;
     glm::vec3 worldPos;
     glm::vec3 wordNormal;
-    int       objectIndex;
+    uint32_t  objectIndex;
 };

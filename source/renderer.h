@@ -4,11 +4,12 @@
 
 #include <SDL.h>
 #include <glm/fwd.hpp>
+#include <stdint.h>
 
-#include "ray.h"
-#include "scene.h"
 #include "camera.h"
 #include "geometry.h"
+#include "ray.h"
+#include "scene.h"
 
 class Renderer {
 public:
@@ -20,10 +21,10 @@ public:
 
 private:
     int        Init();
-    void       RenderClear();
     void       RenderImage();
     void       DrawPixel(int x, int y, const glm::vec4& color);
     void       PixelShader(uint32_t x, uint32_t y);
+    glm::vec3  RayColor(Ray& ray);
     HitPayload TraceRay(const Ray& ray);
 
 private:
@@ -35,6 +36,5 @@ private:
     uint32_t*              m_frameBuffer;
     Camera                 m_camera;
     std::shared_ptr<Scene> m_activeScene;
-    glm::vec3              m_backColor{0.0f, 0.0f, 0.0f};
     float                  m_renderTime;
 };
