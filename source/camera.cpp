@@ -1,13 +1,22 @@
 #include "camera.h"
+#include "misc.h"
+#include <cmath>
 
-Camera::Camera(float aspectRatio) {
-    float focal  = 1.0f;
-    float height = 1.0f;
+Camera::Camera(const glm::vec3& origin, const glm::vec3& lookat, const glm::vec3& updir, float aspectRatio, float verticalFov) {
+    float theta = DegreeToRadians(verticalFov);
+    float h = tan(theta / 2.0f);
+    
+    float height = 2 * h;
     float width  = height * aspectRatio;
 
-    m_horizontal      = glm::vec3(width, 0, 0);
-    m_vertical        = glm::vec3(0, height, 0);
-    m_lowerLeftCorner = m_origin - m_horizontal / 2.0f - m_vertical / 2.0f - glm::vec3(0, 0, focal);
+    glm::vec3 w = glm::normalize(origin - lookat);
+    glm::vec3 u = glm::normalize(glm::cross(updir, w));
+    glm::vec3 v = glm::cross(w, u);
+
+    m_origin = origin;    
+    m_horizontal      = width * u;
+    m_vertical        = height * v;
+    m_lowerLeftCorner = m_origin - m_horizontal / 2.0f - m_vertical / 2.0f - w;
 }
 
 Ray Camera::GetRay(float u, float v) {

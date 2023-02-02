@@ -3,6 +3,7 @@
 #include "glm/fwd.hpp"
 #include <glm/glm.hpp>
 #include <random>
+#include <stdint.h>
 
 class Random {
 public:
@@ -29,8 +30,10 @@ public:
 
 private:
     static thread_local std::mt19937                                m_randomEngine;
-    static std::uniform_int_distribution<std::mt19937::result_type> m_distribution;
+    static std::uniform_int_distribution<uint32_t> m_distribution;
 };
+
+float DegreeToRadians(float degree);
 
 namespace pbr {
 glm::vec3 RandomUnitSphereDir();

@@ -10,8 +10,7 @@
 
 #include "SDL_log.h"
 #include "camera.h"
-#include "glm/fwd.hpp"
-#include "glm/geometric.hpp"
+#include "material.h"
 #include "misc.h"
 #include "ray.h"
 
@@ -23,8 +22,7 @@ static glm::vec3 black    = glm::vec3(0.0f, 0.0f, 0.0f);
 static glm::vec3 lightdir = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
 
 Renderer::Renderer(int viewPortWidth, int viewPortHeight)
-    : m_viewPortWidth(viewPortWidth), m_viewPortHeight(viewPortHeight),
-      m_camera(viewPortWidth * 1.0f / viewPortHeight) {
+    : m_viewPortWidth(viewPortWidth), m_viewPortHeight(viewPortHeight), m_camera(nullptr) {
     Init();
 }
 
@@ -61,6 +59,14 @@ int Renderer::Init() {
 }
 
 void Renderer::Render() {
+    if(m_camera == nullptr) {
+        SDL_Log("Please bind cemera!\n");
+        return;
+    }
+    if(m_activeScene == nullptr) {
+        SDL_Log("Please bind scene!\n");
+        return;
+    }
     bool done = false;
     // main loop
     while (!done) {
@@ -79,6 +85,7 @@ void Renderer::Render() {
 void Renderer::RenderImage() {
     auto horizontalRange = std::ranges::views::iota((uint32_t)0, m_viewPortWidth);
     auto verticalRange   = std::ranges::views::iota((uint32_t)0, m_viewPortHeight);
+    
 #ifdef multithread
     auto startTick = SDL_GetTicks();
     for (auto y : verticalRange) {
@@ -108,7 +115,7 @@ void Renderer::OnResize(uint32_t width, uint32_t height) {
 
 void Renderer::PixelShader(uint32_t x, uint32_t y) {
     // flip y
-    uint32_t spp   = 500;
+    uint32_t spp   = 256;
     float    scale = 1.0f / spp;
 
     glm::vec3 color = {0.0f, 0.0f, 0.0f};
@@ -120,7 +127,7 @@ void Renderer::PixelShader(uint32_t x, uint32_t y) {
 
         float u   = nx * 1.0f / m_viewPortWidth;
         float v   = ny * 1.0f / m_viewPortHeight;
-        Ray   ray = m_camera.GetRay(u, 1 - v);
+        Ray   ray = m_camera->GetRay(u, 1 - v);
 
         color += RayColor(ray);
     }
@@ -130,49 +137,20 @@ void Renderer::PixelShader(uint32_t x, uint32_t y) {
 
 glm::vec3 Renderer::RayColor(Ray& ray) {
     if (Random::Float() > 0.8f) return black;
-    HitPayload payload = TraceRay(ray);
+    HitPayload payload = m_activeScene->Hit(ray);
 
     if (payload.objectIndex != -1) {
         // diffuse part
-        uint32_t    materialIndex = m_activeScene->objects[payload.objectIndex]->GetMaterialIndex();
-        const auto& material      = m_activeScene->materials[materialIndex];
-        ray.origin                = payload.worldPos;
-        ray.direction             = glm::reflect(
-            ray.direction, payload.wordNormal + material.roughness * pbr::RandomHemiSphereDir());
+        const auto& material = m_activeScene->GetMaterial(payload.objectIndex);
+        Ray scatterRay = pbr::Scatter(material, ray, payload);
         float     cos   = glm::dot(-lightdir, payload.wordNormal);
         glm::vec3 color = material.albedo * cos + 0.2f;
-        return material.albedo * RayColor(ray) / 0.8f;
+        return material.albedo * RayColor(scatterRay) / 0.8f;
     }
 
     glm::vec3 dir = glm::normalize(ray.direction);
     float     t   = 0.5 * (dir.y + 1.0f);
     return ((1 - t) * white + t * blue) / 0.8f;
-}
-
-HitPayload Renderer::TraceRay(const Ray& ray) {
-    HitPayload payload;
-    float      closestHitTime = std::numeric_limits<float>::max();
-    payload.objectIndex       = -1;
-
-    for (size_t i = 0; i < m_activeScene->objects.size(); ++i) {
-        const auto& hitObejct = m_activeScene->objects[i];
-        if (auto hitTime = hitObejct->Hit(ray)) {
-            if (hitTime < closestHitTime) {
-                closestHitTime      = hitTime.value();
-                payload.objectIndex = i;
-            }
-        }
-    }
-
-    // if hit something
-    if (payload.objectIndex != -1) {
-        const auto& object = m_activeScene->objects[payload.objectIndex];
-        payload.hitTime    = closestHitTime;
-        payload.worldPos   = ray.origin + ray.direction * closestHitTime;
-        payload.wordNormal = glm::normalize(payload.worldPos - object->GetPositon());
-    }
-
-    return payload;
 }
 
 void Renderer::DrawPixel(int x, int y, const glm::vec4& color) {

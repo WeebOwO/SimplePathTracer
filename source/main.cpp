@@ -1,10 +1,5 @@
 #include "glm/fwd.hpp"
-#include "material.h"
-#include "misc.h"
 #include "renderer.h"
-#include <iostream>
-#include <memory>
-#include <ranges>
 
 void InitScene(Scene& scene) {
     // material setting
@@ -18,19 +13,29 @@ void InitScene(Scene& scene) {
     scene.AddMaterial(material2);
     scene.AddMaterial(material3);
 
-    scene.AddObject(std::make_shared<Sphere>(glm::vec3({0.0f, -100.5f, -2.0f}), 100.0f, 0));
-    scene.AddObject(std::make_shared<Sphere>(glm::vec3({0.0f, 0.0f, -2.0f}), 0.5f, 1));
-    scene.AddObject(std::make_shared<Sphere>(glm::vec3({-1.0f, 0.0f, -2.0f}), 0.5f, 2));
-    scene.AddObject(std::make_shared<Sphere>(glm::vec3({1.0f, 0.0f, -2.0f}), 0.5f, 3));
+    scene.AddObject(std::make_shared<Sphere>(glm::vec3({0.0f, -100.5f, -1.0f}), 100.0f, 0));
+    scene.AddObject(std::make_shared<Sphere>(glm::vec3({0.0f, 0.0f, -1.0f}), 0.5f, 1));
+    scene.AddObject(std::make_shared<Sphere>(glm::vec3({-1.0f, 0.0f, -1.0f}), 0.5f, 2));
+    scene.AddObject(std::make_shared<Sphere>(glm::vec3({1.0f, 0.0f, -1.0f}), 0.5f, 3));
 }
 
 int main(int argc, char** args) {
     // init
-    auto  renderer = Renderer(900, 506);
+    constexpr float aspect = 16.0f / 9.0f;
+    constexpr int imageHeight = 506, imageWidth = static_cast<int>(imageHeight * aspect);
+
+    auto  renderer = Renderer(imageWidth, imageHeight);
+    constexpr glm::vec3 cameraOrgin = {0.0f, 0.0f, 1.0f};
+    constexpr glm::vec3 lookat = {0.0f, 0.0f, -1.0f};
+    constexpr glm::vec3 updir = {0.0f, 1.0f, 0.0f};
+    auto camera = std::make_unique<Camera>(cameraOrgin, lookat, updir, aspect, 90.0f);
     Scene activeScene;
+
     InitScene(activeScene);
-    // render start
-    renderer.SetActiveScene(activeScene);
+    // bind scene and camera
+    renderer.BindScene(activeScene);
+    renderer.BindCamera(std::move(camera));
+    // start render
     renderer.Render();
     return 0;
 }

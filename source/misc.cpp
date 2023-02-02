@@ -4,7 +4,11 @@
 #include <random>
 
 std::mt19937 thread_local Random::m_randomEngine;
-std::uniform_int_distribution<std::mt19937::result_type> Random::m_distribution;
+std::uniform_int_distribution<uint32_t> Random::m_distribution;
+
+float DegreeToRadians(float degree) {
+    return degree / 180.0f * 3.1415926f;
+}
 
 namespace pbr {
 glm::vec3 RandomUnitSphereDir() {
