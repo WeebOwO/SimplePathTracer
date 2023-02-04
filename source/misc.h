@@ -1,5 +1,6 @@
 #pragma once
 
+#include "geometry.h"
 #include "glm/fwd.hpp"
 #include <glm/glm.hpp>
 #include <random>
@@ -29,11 +30,13 @@ public:
     static glm::vec3 InUnitSphere() { return glm::normalize(Vec3(-1.0f, 1.0f)); }
 
 private:
-    static thread_local std::mt19937                                m_randomEngine;
+    static thread_local std::mt19937               m_randomEngine;
     static std::uniform_int_distribution<uint32_t> m_distribution;
 };
 
+namespace misc {
 float DegreeToRadians(float degree);
+}
 
 namespace pbr {
 glm::vec3 RandomUnitSphereDir();

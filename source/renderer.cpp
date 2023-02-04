@@ -6,7 +6,6 @@
 #include <limits>
 #include <numeric>
 #include <ranges>
-#include <stdint.h>
 
 #include "SDL_log.h"
 #include "camera.h"
@@ -16,10 +15,10 @@
 
 #define multithread
 
-static glm::vec3 blue     = glm::vec3(0.5f, 0.7f, 1.0f);
-static glm::vec3 white    = glm::vec3(1.0f, 1.0f, 1.0f);
-static glm::vec3 black    = glm::vec3(0.0f, 0.0f, 0.0f);
-static glm::vec3 lightdir = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
+static constexpr glm::vec3 blue     = glm::vec3(0.5f, 0.7f, 1.0f);
+static constexpr glm::vec3 white    = glm::vec3(1.0f, 1.0f, 1.0f);
+static constexpr glm::vec3 black    = glm::vec3(0.0f, 0.0f, 0.0f);
+static const glm::vec3 lightdir = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
 
 Renderer::Renderer(int viewPortWidth, int viewPortHeight)
     : m_viewPortWidth(viewPortWidth), m_viewPortHeight(viewPortHeight), m_camera(nullptr) {
@@ -139,7 +138,7 @@ glm::vec3 Renderer::RayColor(Ray& ray) {
     if (Random::Float() > 0.8f) return black;
     HitPayload payload = m_activeScene->Hit(ray);
 
-    if (payload.objectIndex != -1) {
+    if (payload.objectIndex >= 0) {
         // diffuse part
         const auto& material = m_activeScene->GetMaterial(payload.objectIndex);
         Ray scatterRay = pbr::Scatter(material, ray, payload);

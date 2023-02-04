@@ -3,7 +3,7 @@
 #include <cmath>
 
 Camera::Camera(const glm::vec3& origin, const glm::vec3& lookat, const glm::vec3& updir, float aspectRatio, float verticalFov) {
-    float theta = DegreeToRadians(verticalFov);
+    float theta = misc::DegreeToRadians(verticalFov);
     float h = tan(theta / 2.0f);
     
     float height = 2 * h;

@@ -8,9 +8,9 @@ struct Ray {
 };
 
 struct HitPayload {
+    int  objectIndex;
     float     hitDistance;
     float     hitTime;
     glm::vec3 worldPos;
     glm::vec3 wordNormal;
-    uint32_t  objectIndex;
 };
