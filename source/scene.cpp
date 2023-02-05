@@ -31,8 +31,7 @@ HitPayload Scene::Hit(const Ray& ray) const {
     if (payload.objectIndex != -1) {
         const auto& object = m_objects[payload.objectIndex];
         payload.hitTime    = closestHitTime;
-        payload.worldPos   = ray.origin + ray.direction * closestHitTime;
-        payload.wordNormal = glm::normalize(payload.worldPos - object->GetPositon());
+        object->HitSolve(ray, payload);
     }
 
     return payload;

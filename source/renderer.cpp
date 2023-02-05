@@ -141,15 +141,16 @@ glm::vec3 Renderer::RayColor(Ray& ray) {
     if (payload.objectIndex >= 0) {
         // diffuse part
         const auto& material = m_activeScene->GetMaterial(payload.objectIndex);
+        if(material.type == MaterialType::light) {
+            return material.emit;
+        }
         Ray scatterRay = pbr::Scatter(material, ray, payload);
         float     cos   = glm::dot(-lightdir, payload.wordNormal);
         glm::vec3 color = material.albedo * cos + 0.2f;
         return material.albedo * RayColor(scatterRay) / 0.8f;
     }
 
-    glm::vec3 dir = glm::normalize(ray.direction);
-    float     t   = 0.5 * (dir.y + 1.0f);
-    return ((1 - t) * white + t * blue) / 0.8f;
+    return black;
 }
 
 void Renderer::DrawPixel(int x, int y, const glm::vec4& color) {

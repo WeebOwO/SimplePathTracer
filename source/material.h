@@ -4,14 +4,15 @@
 #include "material.h"
 #include "ray.h"
 
-enum class MaterialType : uint8_t { metal, dielectric };
+enum class MaterialType : uint8_t { object, light };
 
 struct Material {
     glm::vec3    albedo;
     float        roughness;
     float        metallic;
     float        f0;
-    MaterialType type;
+    glm::vec3    emit;
+    MaterialType type = MaterialType::object;
 };
 
 namespace pbr {
