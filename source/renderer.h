@@ -5,6 +5,7 @@
 #include <SDL.h>
 #include <glm/fwd.hpp>
 #include <stdint.h>
+#include <vector>
 
 #include "camera.h"
 #include "geometry.h"
@@ -24,7 +25,7 @@ private:
     int  Init();
     void RenderImage();
     void DrawPixel(int x, int y, const glm::vec4& color);
-    void PixelShader(uint32_t x, uint32_t y);
+    void PixelShader(uint32_t x, uint32_t y, float scale);
 
     glm::vec3  RayColor(Ray& ray);
     Renderer()                                 = delete;
@@ -40,6 +41,7 @@ private:
     SDL_Renderer*           m_renderer;
     SDL_Texture*            m_swapBuffer;
     uint32_t*               m_frameBuffer;
+    std::vector<glm::vec3>  m_colorBuffer;
     std::shared_ptr<Camera> m_camera;
     std::shared_ptr<Scene>  m_activeScene;
     float                   m_renderTime;
