@@ -17,7 +17,7 @@ struct HitPayload {
     glm::vec3 wordNormal;
 
     void SetFaceNormal(const Ray& ray, const glm::vec3& outwardNormal) {
-        frontFace  = glm::dot(ray.direction, outwardNormal) < 0;
+        frontFace  = glm::dot(ray.direction, outwardNormal) < 0.0f;
         wordNormal = frontFace ? outwardNormal : -outwardNormal;
     }
 };

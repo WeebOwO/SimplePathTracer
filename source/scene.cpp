@@ -16,24 +16,15 @@ HitPayload Scene::Hit(const Ray& ray) const {
     HitPayload payload;
     float      closestHitTime = std::numeric_limits<float>::max();
     payload.objectIndex       = -1;
-
+    bool hitAny = false;
     for (uint32_t i = 0; i < m_objects.size(); ++i) {
         const auto& hitObejct = m_objects[i];
-        if (auto hitTime = hitObejct->Hit(ray)) {
-            if (hitTime < closestHitTime) {
-                closestHitTime      = hitTime.value();
-                payload.objectIndex = i;
-            }
+        if (hitObejct->Hit(ray, 0.0001, closestHitTime, payload)) {
+            payload.objectIndex = i;
+            closestHitTime = payload.hitTime;
+            hitAny = true;
         }
     }
-
-    // if hit something
-    if (payload.objectIndex != -1) {
-        const auto& object = m_objects[payload.objectIndex];
-        payload.hitTime    = closestHitTime;
-        object->HitSolve(ray, payload);
-    }
-
     return payload;
 }
 

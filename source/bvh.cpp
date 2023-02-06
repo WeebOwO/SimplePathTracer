@@ -7,9 +7,9 @@ bool BvhNode::BoundingBox(float t0, float t1, AABB& outputBox) const {
     return true;
 }
 
-std::optional<float> BvhNode::Hit(const Ray &ray) const {
+bool BvhNode::Hit(const Ray& ray, float minTime, float maxTime, HitPayload& payload) const {
     if(!box.Hit(ray)) return false;
-    auto hitLeft = left->Hit(ray);
-    auto hitright = right->Hit(ray);
+    auto hitLeft = left->Hit(ray, minTime, maxTime, payload);
+    auto hitright = right->Hit(ray, minTime, maxTime, payload);
     return hitLeft || hitright;
 }

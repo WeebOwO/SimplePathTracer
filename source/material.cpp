@@ -1,22 +1,10 @@
 #include "material.h"
-#include "glm/fwd.hpp"
-#include "glm/geometric.hpp"
-#include "misc.h"
-#include "ray.h"
 
 namespace pbr {
-bool Scatter(const Material& material, const Ray& IncomingRay, const HitPayload& payload, Ray& scatter) {
-    if(material.type == MaterialType::diffuse) {
-        glm::vec3 dirtection = payload.wordNormal + pbr::RandomUnitSphereDir();
-        scatter.origin = payload.worldPos;
-        scatter.direction = dirtection;
-        return true;
-    }
-    if(material.type == MaterialType::metal) {
-        scatter.origin = payload.worldPos;
-        scatter.direction = glm::reflect(IncomingRay.direction, payload.wordNormal) + material.fuzz * RandomUnitSphereDir();
-        return glm::dot(scatter.direction, payload.wordNormal) > 0.0f;
-    }
-    return false;
+float Reflectance(float cosine, float refIndex) {
+    // Use Schlick's approximation for reflectance.
+    auto r0 = (1 - refIndex) / (1 + refIndex);
+    r0      = r0 * r0;
+    return r0 + (1 - r0) * pow((1 - cosine), 5);
 }
 } // namespace pbr

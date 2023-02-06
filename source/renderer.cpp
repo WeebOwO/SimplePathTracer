@@ -10,15 +10,13 @@
 #include "SDL_log.h"
 #include "camera.h"
 #include "glm/fwd.hpp"
+#include "glm/geometric.hpp"
 #include "material.h"
 #include "misc.h"
 #include "ray.h"
 
 #define multithread
 
-static constexpr glm::vec3 blue     = glm::vec3(0.5f, 0.7f, 1.0f);
-static constexpr glm::vec3 white    = glm::vec3(1.0f, 1.0f, 1.0f);
-static constexpr glm::vec3 black    = glm::vec3(0.0f, 0.0f, 0.0f);
 static const glm::vec3 lightdir = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
 
 Renderer::Renderer(int viewPortWidth, int viewPortHeight)
@@ -85,9 +83,9 @@ void Renderer::Render() {
 void Renderer::RenderImage() {
     auto horizontalRange = std::ranges::views::iota((uint32_t)0, m_viewPortWidth);
     auto verticalRange   = std::ranges::views::iota((uint32_t)0, m_viewPortHeight);
-    
-#ifdef multithread
     auto startTick = SDL_GetTicks();
+#ifdef multithread
+   
     for (auto y : verticalRange) {
         std::for_each(std::execution::par, horizontalRange.begin(), horizontalRange.end(),
                       [&](int x) { PixelShader(x, y); });
@@ -138,22 +136,47 @@ void Renderer::PixelShader(uint32_t x, uint32_t y) {
 glm::vec3 Renderer::RayColor(Ray& ray) {
     if (Random::Float() > 0.8f) return black;
     HitPayload payload = m_activeScene->Hit(ray);
+    
     if (payload.objectIndex == -1) {
         glm::vec3 unit = glm::normalize(ray.direction);
         float t = 0.5f * (unit.y + 1.0f);
         return (1 - t) * white + t * blue;
     }
     
-    // diffuse part
     const auto& material = m_activeScene->GetMaterial(payload.objectIndex);
+    
     if(material.type == MaterialType::light) {
-        return material.emit;
+        return {15.0f, 15.0f, 15.0f};
     }
-    Ray scatterRay;
-    if(!pbr::Scatter(material, ray, payload, scatterRay)) {
-        return black;
+
+    if(material.type == MaterialType::diffuse) {
+        glm::vec3 target = payload.worldPos + payload.wordNormal + pbr::RandomUnitSphereDir();
+        ray.direction = target - payload.worldPos;
     }
-    return material.albedo * RayColor(scatterRay);
+
+    if(material.type == MaterialType::metal) {
+        glm::vec3 reflect = glm::reflect(glm::normalize(ray.direction), payload.wordNormal);
+        ray.direction = reflect + material.fuzz * pbr::RandomUnitSphereDir();
+    }
+
+    if(material.type == MaterialType::dielectric) {
+        float refractionRatio = 1.5f;
+        if(payload.frontFace) {
+            refractionRatio = 1.0f / refractionRatio;
+        }
+        glm::vec3 unit = glm::normalize(ray.direction);
+        
+        float cosTheta = fmin(glm::dot(-unit, payload.wordNormal), 1.0f);
+        float sinTheta = sqrt(1.0f - cosTheta * cosTheta);
+        // total internal reflection
+        if(refractionRatio * sinTheta > 1.0f || pbr::Reflectance(cosTheta, refractionRatio) > Random::Float()) {
+            ray.direction = glm::reflect(unit, payload.wordNormal);
+        } else {
+            ray.direction = glm::refract(unit, payload.wordNormal, refractionRatio);
+        }
+    }
+    ray.origin = payload.worldPos;
+    return material.albedo * RayColor(ray);
 }
 
 void Renderer::DrawPixel(int x, int y, const glm::vec4& color) {

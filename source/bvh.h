@@ -7,7 +7,7 @@
 
 // BvhNode define
 struct BvhNode : public HitableObject {
-    std::optional<float> Hit(const Ray& ray) const override;
+    virtual bool Hit(const Ray& ray, float minTime, float maxTime, HitPayload& payload) const override;
     bool                 BoundingBox(float t0, float t1, AABB& outputBox) const override;
     
     std::shared_ptr<HitableObject> left {nullptr};

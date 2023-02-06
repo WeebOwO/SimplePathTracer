@@ -2,15 +2,19 @@
 #include "glm/fwd.hpp"
 #include "material.h"
 #include "renderer.h"
+#include "misc.h"
+#include "scene.h"
+#include <memory>
 
-static constexpr glm::vec3 cameraOrgin = {0.0f, 0.0f, 0.0f};
-static constexpr glm::vec3 lookat      = {0.0f, 0.0f, -1.0f};
+static constexpr glm::vec3 cameraOrgin = {278, 278, -800};
+static constexpr glm::vec3 lookat      = {278, 278, 0};
 static constexpr glm::vec3 updir       = {0.0f, 1.0f, 0.0f};
-static constexpr float     verticalFov = 90.0f;
+static constexpr float     verticalFov = 40.0f;
 
-void InitScene(Scene& scene, uint32_t index) {
-    if (index == 0) {
-        // material setting
+
+Scene InitScene(uint32_t index) {
+    Scene scene;
+    if(index == 0) {
         Material material0{glm::vec3(0.8f, 0.8f, 0.0f), {0.0f, 0.0f, 0.0f}, 1.0f, MaterialType::diffuse};
         Material material1{glm::vec3(0.7f, 0.3f, 0.3f), {0.0f, 0.0f, 0.0f}, 1.0f, MaterialType::diffuse};
         Material material2{glm::vec3(0.8f, 0.8f, 0.8f), {0.0f, 0.0f, 0.0f}, 0.1f, MaterialType::metal};
@@ -26,31 +30,41 @@ void InitScene(Scene& scene, uint32_t index) {
         scene.AddObject(std::make_shared<Sphere>(glm::vec3({-1.0f, 0.0f, -1.0f}), 0.5f, 2));
         scene.AddObject(std::make_shared<Sphere>(glm::vec3({1.0f, 0.0f, -1.0f}), 0.5f, 3));
     }
-    if (index == 1) {
-        // lighting Set
-        Material light;
-        light.emit = {5.0f, 5.0f, 5.0f};
-        light.type = MaterialType::light;
+    else if(index == 1) {
+        Material red = {glm::vec3(.65f, .05f, .05f), black, 0, MaterialType::diffuse};
+        Material white  = {glm::vec3(.73, .73, .73), black, 0, MaterialType::diffuse};
+        Material green  = {glm::vec3(.12, .45, .15), black, 0, MaterialType::diffuse};
+        Material light  = {{1.0f, 1.0f, 1.0f}, {15.0f, 15.0f, 15.0f}, 0, MaterialType::light};
 
+        scene.AddMaterial(red);
+        scene.AddMaterial(white);
+        scene.AddMaterial(green);
         scene.AddMaterial(light);
-        scene.AddObject(std::make_shared<XyRect>(glm::vec4(-1, -1, 1, 1), -2, 0));
+
+        scene.AddObject(std::make_shared<YzRect>(glm::vec4(0, 0, 555, 555), 555, 2));
+        scene.AddObject(std::make_shared<YzRect>(glm::vec4(0, 0, 555, 555), 0, 0));
+        scene.AddObject(std::make_shared<XzRect>(glm::vec4(213, 227, 343, 332), 554, 3));
+        scene.AddObject(std::make_shared<XzRect>(glm::vec4(0, 0, 555, 555), 0, 1));
+        scene.AddObject(std::make_shared<XzRect>(glm::vec4(0, 0, 555, 555), 555, 1));
+        scene.AddObject(std::make_shared<XyRect>(glm::vec4(0, 0, 555, 555), 555, 1));
+
     }
+    return scene;
 }
 
 int main(int argc, char** args) {
     // init
-    constexpr float aspect      = 16.0f / 9.0f;
-    constexpr int   imageHeight = 506, imageWidth = static_cast<int>(imageHeight * aspect);
+    constexpr float aspect      = 1.0f;
+    constexpr int   imageHeight = 600, imageWidth = static_cast<int>(imageHeight * aspect);
 
     auto  renderer = Renderer(imageWidth, imageHeight);
-    auto  camera   = std::make_unique<Camera>(cameraOrgin, lookat, updir, aspect, verticalFov);
-    Scene activeScene;
+    auto  camera   = std::make_shared<Camera>(cameraOrgin, lookat, updir, aspect, verticalFov);
 
-    InitScene(activeScene, 0);
     // bind scene and camera
-    renderer.BindScene(activeScene);
-    renderer.BindCamera(std::move(camera));
+    renderer.BindScene(InitScene(1));
+    renderer.BindCamera(camera);
     // start render
     renderer.Render();
+
     return 0;
 }

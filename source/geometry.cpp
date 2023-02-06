@@ -1,6 +1,9 @@
 #include "geometry.h"
 #include "glm/fwd.hpp"
+#include "glm/geometric.hpp"
 
+#include <corecrt_math.h>
+#include <execution>
 #include <iostream>
 #include <optional>
 #include <stdint.h>
@@ -25,22 +28,27 @@ bool AABB::Hit(const Ray& ray) const {
     return true;
 }
 
-std::optional<float> Sphere::Hit(const Ray& ray) const {
+bool Sphere::Hit(const Ray& ray, float minTime, float maxTime, HitPayload& payload) const {
     glm::vec3 origin       = ray.origin - m_position;
     float     a            = glm::dot(ray.direction, ray.direction);
     float     b            = 2.0f * glm::dot(origin, ray.direction);
     float     c            = glm::dot(origin, origin) - m_radius * m_radius;
     float     discriminant = b * b - 4.0f * a * c;
-    if (discriminant < 0) return std::nullopt;
+
+
+    if (discriminant < 0) return false;
     float closestT = (-b - glm::sqrt(discriminant)) / (2.0f * a);
-    if (closestT > 0.0f + 1e-4) return closestT;
-    return std::nullopt;
+    if(closestT < minTime || closestT > maxTime) return false;
+
+    payload.hitTime = closestT;
+
+    payload.worldPos = ray.origin + closestT * ray.direction;
+    glm::vec3 outnormal = glm::normalize(payload.worldPos - m_position);
+    payload.SetFaceNormal(ray, outnormal);
+
+    return true;
 }
 
-void Sphere::HitSolve(const Ray& ray, HitPayload& payload) const {
-    payload.worldPos   = ray.origin + ray.direction * payload.hitTime;
-    payload.wordNormal = glm::normalize(payload.worldPos - m_position);
-}
 
 AABB SurroundingBox(const AABB& box1, const AABB& box2) {
     glm::vec3 minPoint = {
@@ -58,18 +66,18 @@ AABB SurroundingBox(const AABB& box1, const AABB& box2) {
     return AABB(minPoint, maxPoint);
 }
 
-std::optional<float> XyRect::Hit(const Ray& ray) const { 
+bool XyRect::Hit(const Ray& ray, float minTime, float maxTime, HitPayload& payload) const { 
     float t = (m_z - ray.origin.z) / ray.direction.z;
+    if(t < minTime || t > maxTime) return false;
+
     float x = ray.origin.x + t * ray.direction.x;
     float y = ray.origin.y + t * ray.direction.y;
-    if(x < m_xy[0] || y < m_xy[1] || x > m_xy[2] || y > m_xy[3]) return std::nullopt;
-    return t;
-}
 
-void XyRect::HitSolve(const Ray& ray, HitPayload& payload) const {
-    glm::vec3 wordNormal = glm::vec3(0, 0, -1);
-    payload.SetFaceNormal(ray, wordNormal);
-    payload.worldPos = ray.origin + ray.direction * payload.hitTime;
+    if(x < m_xy[0] || y < m_xy[1] || x > m_xy[2] || y > m_xy[3]) return false;
+    payload.SetFaceNormal(ray, glm::vec3(0, 0, 1));
+    payload.hitTime = t;
+    payload.worldPos = ray.origin + ray.direction * t;
+    return true;
 }
 
 bool XyRect::BoundingBox(float to, float t1, AABB& outputBox) const {
@@ -77,6 +85,49 @@ bool XyRect::BoundingBox(float to, float t1, AABB& outputBox) const {
         AABB(glm::vec3(m_xy[0], m_xy[1], m_z - 1e-4), glm::vec3(m_xy[2], m_xy[3], m_z + 1e-4));
     return true;
 }
+
+
+bool XzRect::Hit(const Ray &ray, float minTime, float maxTime, HitPayload &payload) const {
+    float t = (m_y - ray.origin.y) / ray.direction.y;
+    if(t < minTime || t > maxTime) return false;
+
+    float x = ray.origin.x + t * ray.direction.x;
+    float z = ray.origin.z + t * ray.direction.z;
+
+    if(x < m_xz[0] || z < m_xz[1] || x > m_xz[2] || z > m_xz[3]) return false;
+    payload.SetFaceNormal(ray, glm::vec3(0, 1, 0));
+    payload.hitTime = t;
+    payload.worldPos = ray.origin + ray.direction * t;
+    return true;
+}
+
+bool XzRect::BoundingBox(float to, float t1, AABB &outputBox) const {
+    outputBox =
+        AABB(glm::vec3(m_xz[0], m_y - 1e-4, m_xz[1]), glm::vec3(m_xz[2], m_y + 1e-4, m_xz[3]));
+    return true;
+}
+
+
+bool YzRect::Hit(const Ray &ray, float minTime, float maxTime, HitPayload &payload) const {
+    float t = (m_x - ray.origin.x) / ray.direction.x;
+    if(t < minTime || t > maxTime) return false;
+
+    float y = ray.origin.y + t * ray.direction.y;
+    float z = ray.origin.z + t * ray.direction.z;
+
+    if(y < m_yz[0] || z < m_yz[1] || y > m_yz[2] || z > m_yz[3]) return false;
+    payload.SetFaceNormal(ray, glm::vec3(1, 0, 0));
+    payload.hitTime = t;
+    payload.worldPos = ray.origin + ray.direction * t;
+    return true;
+}
+
+bool YzRect::BoundingBox(float to, float t1, AABB &outputBox) const {
+    outputBox =
+        AABB(glm::vec3(m_x - 1e-4, m_yz[0], m_yz[1]), glm::vec3(m_x + 1e-4, m_yz[2], m_yz[3]));
+    return true;
+}
+
 
 bool BoxCompare(const std::shared_ptr<HitableObject> a, const std::shared_ptr<HitableObject> b,
                 int axis) {
