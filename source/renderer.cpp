@@ -9,6 +9,7 @@
 
 #include "SDL_log.h"
 #include "camera.h"
+#include "glm/fwd.hpp"
 #include "material.h"
 #include "misc.h"
 #include "ray.h"
@@ -137,20 +138,22 @@ void Renderer::PixelShader(uint32_t x, uint32_t y) {
 glm::vec3 Renderer::RayColor(Ray& ray) {
     if (Random::Float() > 0.8f) return black;
     HitPayload payload = m_activeScene->Hit(ray);
-
-    if (payload.objectIndex >= 0) {
-        // diffuse part
-        const auto& material = m_activeScene->GetMaterial(payload.objectIndex);
-        if(material.type == MaterialType::light) {
-            return material.emit;
-        }
-        Ray scatterRay = pbr::Scatter(material, ray, payload);
-        float     cos   = glm::dot(-lightdir, payload.wordNormal);
-        glm::vec3 color = material.albedo * cos + 0.2f;
-        return material.albedo * RayColor(scatterRay) / 0.8f;
+    if (payload.objectIndex == -1) {
+        glm::vec3 unit = glm::normalize(ray.direction);
+        float t = 0.5f * (unit.y + 1.0f);
+        return (1 - t) * white + t * blue;
     }
-
-    return black;
+    
+    // diffuse part
+    const auto& material = m_activeScene->GetMaterial(payload.objectIndex);
+    if(material.type == MaterialType::light) {
+        return material.emit;
+    }
+    Ray scatterRay;
+    if(!pbr::Scatter(material, ray, payload, scatterRay)) {
+        return black;
+    }
+    return material.albedo * RayColor(scatterRay);
 }
 
 void Renderer::DrawPixel(int x, int y, const glm::vec4& color) {

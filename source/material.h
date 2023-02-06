@@ -4,19 +4,17 @@
 #include "material.h"
 #include "ray.h"
 
-enum class MaterialType : uint8_t { object, light };
+enum class MaterialType : uint8_t { light, diffuse, metal };
 
 struct Material {
     glm::vec3    albedo;
-    float        roughness;
-    float        metallic;
-    float        f0;
     glm::vec3    emit;
-    MaterialType type = MaterialType::object;
+    float        fuzz;
+    MaterialType type = MaterialType::diffuse;
 };
 
 namespace pbr {
-Ray Scatter(const Material& material, const Ray& IncomingRay, const HitPayload& payload);
+bool Scatter(const Material& material, const Ray& IncomingRay, const HitPayload& payload, Ray& scatter);
 
 float SchlickApproximation(float cos, const glm::vec3& f0);
 } // namespace pbr

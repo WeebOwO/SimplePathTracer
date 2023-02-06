@@ -18,7 +18,7 @@ public:
     void Render();
     void OnResize(uint32_t width, uint32_t height);
     void BindScene(const Scene& scene) { m_activeScene = std::make_shared<Scene>(scene); }
-    void BindCamera(std::unique_ptr<Camera> camera) {m_camera = std::move(camera);}
+    void BindCamera(std::shared_ptr<Camera> camera) {m_camera = camera;}
 
 private:
     int  Init();
@@ -40,7 +40,7 @@ private:
     SDL_Renderer*           m_renderer;
     SDL_Texture*            m_swapBuffer;
     uint32_t*               m_frameBuffer;
-    std::unique_ptr<Camera> m_camera;
+    std::shared_ptr<Camera> m_camera;
     std::shared_ptr<Scene>  m_activeScene;
     float                   m_renderTime;
 };
