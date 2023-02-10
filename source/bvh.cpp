@@ -1,6 +1,4 @@
 #include "bvh.h"
-#include <optional>
-
 
 bool BvhNode::BoundingBox(float t0, float t1, AABB& outputBox) const { 
     outputBox = box;

@@ -16,7 +16,6 @@ glm::vec3 RandomUnitSphereDir() {
     while (true) {
         auto dir = Random::Vec3(-1.0f, 1.0f);
         if (glm::length(dir) > 1.0f) continue;
-        ;
         return glm::normalize(dir);
     }
 }
@@ -25,7 +24,6 @@ glm::vec3 RandomHemiSphereDir() {
     while (true) {
         auto dir = glm::vec3(Random::Float(), Random::Float(), Random::Float());
         if (glm::length(dir) > 1.0f) continue;
-        ;
         return glm::normalize(dir);
     }
 }

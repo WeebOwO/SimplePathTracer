@@ -8,16 +8,7 @@
 #include <ranges>
 #include <vector>
 
-#include "SDL_log.h"
-#include "SDL_timer.h"
-#include "camera.h"
-#include "glm/fwd.hpp"
-#include "glm/geometric.hpp"
-#include "material.h"
 #include "misc.h"
-#include "ray.h"
-
-#define multithread
 
 static const glm::vec3 lightdir = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
 
@@ -86,7 +77,7 @@ void Renderer::Render() {
 void Renderer::RenderImage() {
     auto horizontalRange = std::ranges::views::iota((uint32_t)0, m_viewPortWidth);
     auto verticalRange   = std::ranges::views::iota((uint32_t)0, m_viewPortHeight);
-    int spp = 1024;
+    int  spp             = 1024;
     for (int i = 0; i < spp; ++i) {
         auto startTick = SDL_GetTicks();
         for (auto y : verticalRange) {
@@ -98,7 +89,6 @@ void Renderer::RenderImage() {
         SDL_UpdateTexture(m_swapBuffer, nullptr, m_frameBuffer, sizeof(uint32_t) * m_viewPortWidth);
         SDL_RenderCopy(m_renderer, m_swapBuffer, nullptr, nullptr);
         SDL_RenderPresent(m_renderer);
-
     }
 }
 
@@ -121,7 +111,7 @@ void Renderer::PixelShader(uint32_t x, uint32_t y, float scale) {
     Ray   ray = m_camera->GetRay(u, 1 - v);
 
     color += RayColor(ray);
-    
+
     glm::vec3 result = color * scale;
     DrawPixel(x, y, glm::vec4(glm::sqrt(result), 1.0f));
 }
@@ -131,6 +121,7 @@ glm::vec3 Renderer::RayColor(Ray& ray) {
     HitPayload payload = m_activeScene->Hit(ray);
 
     if (payload.objectIndex == -1) {
+        return black;
         glm::vec3 unit = glm::normalize(ray.direction);
         float     t    = 0.5f * (unit.y + 1.0f);
         return (1 - t) * white + t * blue;
@@ -166,7 +157,7 @@ glm::vec3 Renderer::RayColor(Ray& ray) {
         }
     }
     ray.origin = payload.worldPos;
-    return material.albedo * RayColor(ray);
+    return material.albedo * 0.8f * RayColor(ray);
 }
 
 void Renderer::DrawPixel(int x, int y, const glm::vec4& color) {
