@@ -27,8 +27,3 @@ struct CosinePdf : public Pdf {
     };
     Onb uvw;
 };
-
-
-
-
-
