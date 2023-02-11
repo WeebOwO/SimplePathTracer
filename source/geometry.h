@@ -2,7 +2,6 @@
 
 #include <array>
 #include <memory>
-#include <optional>
 #include <stdint.h>
 
 #include "glm/fwd.hpp"
@@ -62,7 +61,6 @@ public:
     virtual bool Hit(const Ray& ray, float minTime, float maxTime,
                      HitPayload& payload) const override;
     virtual bool BoundingBox(float to, float t1, AABB& outputBox) const override;
-
 private:
     glm::vec4 m_xz; // xmin, zmin, xmax, zmax
     float     m_y;

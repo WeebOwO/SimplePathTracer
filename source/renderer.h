@@ -3,7 +3,6 @@
 #include <memory>
 
 #include <SDL.h>
-#include <glm/fwd.hpp>
 #include <stdint.h>
 #include <vector>
 

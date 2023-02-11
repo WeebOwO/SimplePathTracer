@@ -1,11 +1,11 @@
 #include "renderer.h"
 
-static glm::vec3 cameraOrigin = {278, 278, -800};
-static glm::vec3 lookat       = {278, 278, 0};
-static glm::vec3 updir        = {0.0f, 1.0f, 0.0f};
-static float     verticalFov  = 40.0f;
-static float     aspect       = 1.0f;
-static int       imageHeight = 600, imageWidth = static_cast<int>(imageHeight * aspect);
+static constexpr glm::vec3 cameraOrigin = {278, 278, -800};
+static constexpr glm::vec3 lookat       = {278, 278, 0};
+static constexpr glm::vec3 updir        = {0.0f, 1.0f, 0.0f};
+static constexpr float     verticalFov  = 40.0f;
+static constexpr float     aspect       = 1.0f;
+static constexpr int       imageHeight = 600, imageWidth = static_cast<int>(imageHeight * aspect);
 
 Scene CreateScene() {
     Scene scene;

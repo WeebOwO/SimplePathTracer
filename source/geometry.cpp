@@ -3,10 +3,12 @@
 #include <cmath>
 #include <execution>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <stdint.h>
 
 #include "misc.h"
+#include "ray.h"
 
 bool Sphere::BoundingBox(float to, float t1, AABB& outputBox) const {
     auto range = glm::vec3(m_radius, m_radius, m_radius);

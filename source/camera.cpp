@@ -1,6 +1,8 @@
 #include "camera.h"
-#include "misc.h"
+
 #include <cmath>
+#include "misc.h"
+
 
 Camera::Camera(const glm::vec3& origin, const glm::vec3& lookat, const glm::vec3& updir, float aspectRatio, float verticalFov) {
     float theta = misc::DegreeToRadians(verticalFov);

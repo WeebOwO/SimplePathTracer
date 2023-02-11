@@ -1,8 +1,10 @@
 #include "scene.h"
+
 #include "bvh.h"
 #include "geometry.h"
 #include "misc.h"
 #include "ray.h"
+
 #include <iostream>
 #include <memory>
 #include <stdint.h>

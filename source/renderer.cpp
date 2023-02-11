@@ -7,10 +7,11 @@
 #include <numeric>
 #include <ranges>
 #include <vector>
+#include <cmath>
 
+#include "material.h"
 #include "misc.h"
-
-static const glm::vec3 lightdir = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
+#include "pdf.h"
 
 Renderer::Renderer(int viewPortWidth, int viewPortHeight)
     : m_viewPortWidth(viewPortWidth), m_viewPortHeight(viewPortHeight), m_camera(nullptr) {
@@ -77,7 +78,7 @@ void Renderer::Render() {
 void Renderer::RenderImage() {
     auto horizontalRange = std::ranges::views::iota((uint32_t)0, m_viewPortWidth);
     auto verticalRange   = std::ranges::views::iota((uint32_t)0, m_viewPortHeight);
-    int  spp             = 1024;
+    int  spp             = 1000000;
     for (int i = 0; i < spp; ++i) {
         auto startTick = SDL_GetTicks();
         for (auto y : verticalRange) {
@@ -128,12 +129,16 @@ glm::vec3 Renderer::RayColor(Ray& ray) {
     }
 
     const auto& material = m_activeScene->GetMaterial(payload.objectIndex);
+    float pdfValue = 0.25 * pbr::pi, index;
 
     if (material.type == MaterialType::light) { return {15.0f, 15.0f, 15.0f}; }
 
-    if (material.type == MaterialType::diffuse) {
-        glm::vec3 target = payload.worldPos + payload.wordNormal + pbr::RandomUnitSphereDir();
-        ray.direction    = target - payload.worldPos;
+    if (material.type == MaterialType::diffuse) {        
+        CosinePdf p(payload.wordNormal);
+        ray.direction = p.Generate();
+        float cosine = glm::dot(payload.wordNormal, ray.direction);
+        index = cosine < 0 ? 0 : cosine / pbr::pi;
+        pdfValue = p.Value(ray.direction);
     }
 
     if (material.type == MaterialType::metal) {
@@ -156,8 +161,24 @@ glm::vec3 Renderer::RayColor(Ray& ray) {
             ray.direction = glm::refract(unit, payload.wordNormal, refractionRatio);
         }
     }
+
+#ifdef ONLY_LIGHT
+    glm::vec3 onLight = glm::vec3(misc::RandomFloat(213, 343), 554, misc::RandomFloat(227, 332));
+    glm::vec3 toLight = onLight - payload.worldPos;
+    float distanceSq = glm::dot(toLight, toLight);
+    toLight = glm::normalize(toLight);
+
+    if(glm::dot(toLight, payload.wordNormal) < 0) return black;
+    constexpr float area = (343-213)*(332-227);
+    float lightCos = fabs(toLight.y);
+    if(lightCos < 1e-4) return black;
+    float lightPdf = distanceSq / (lightCos * area); 
+    float pdf = 0.5 * lightPdf + 0.5 * pdfValue;
+    ray.direction = toLight;
+#endif
+
     ray.origin = payload.worldPos;
-    return material.albedo * 0.8f * RayColor(ray);
+    return material.albedo * RayColor(ray) * index / 0.8f / pdfValue;
 }
 
 void Renderer::DrawPixel(int x, int y, const glm::vec4& color) {
