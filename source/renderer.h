@@ -43,5 +43,4 @@ private:
     std::vector<glm::vec3>  m_colorBuffer;
     std::shared_ptr<Camera> m_camera;
     std::shared_ptr<Scene>  m_activeScene;
-    float                   m_renderTime;
 };

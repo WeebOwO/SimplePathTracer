@@ -47,7 +47,6 @@ int Renderer::Init() {
     }
     m_frameBuffer = new uint32_t[m_viewPortWidth * m_viewPortHeight];
     m_colorBuffer.resize(m_viewPortWidth * m_viewPortHeight);
-    // camera init
     return 1;
 }
 
@@ -86,7 +85,7 @@ void Renderer::RenderImage() {
                           [&](int x) { PixelShader(x, y, 1.0f / i); });
         }
         auto endTick = SDL_GetTicks();
-        // SDL_Log("Per spp tick is %d ms", endTick - startTick);
+        SDL_Log("Per spp tick is %d ms", endTick - startTick);
         SDL_UpdateTexture(m_swapBuffer, nullptr, m_frameBuffer, sizeof(uint32_t) * m_viewPortWidth);
         SDL_RenderCopy(m_renderer, m_swapBuffer, nullptr, nullptr);
         SDL_RenderPresent(m_renderer);
@@ -123,9 +122,6 @@ glm::vec3 Renderer::RayColor(Ray& ray) {
 
     if (payload.objectIndex == -1) {
         return black;
-        glm::vec3 unit = glm::normalize(ray.direction);
-        float     t    = 0.5f * (unit.y + 1.0f);
-        return (1 - t) * white + t * blue;
     }
 
     const auto& material = m_activeScene->GetMaterial(payload.objectIndex);
