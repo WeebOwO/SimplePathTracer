@@ -127,9 +127,9 @@ glm::vec3 Renderer::RayColor(Ray& ray) {
     const auto& material = m_activeScene->GetMaterial(payload.objectIndex);
     float pdfValue = 0.25 * pbr::pi, index;
 
-    if (material.type == MaterialType::light) { return {15.0f, 15.0f, 15.0f}; }
+    if (material.type == MaterialType::Light) { return {15.0f, 15.0f, 15.0f}; }
 
-    if (material.type == MaterialType::diffuse) {        
+    if (material.type == MaterialType::Diffuse) {        
         CosinePdf p(payload.wordNormal);
         ray.direction = p.Generate();
         float cosine = glm::dot(payload.wordNormal, ray.direction);
@@ -137,12 +137,12 @@ glm::vec3 Renderer::RayColor(Ray& ray) {
         pdfValue = p.Value(ray.direction);
     }
 
-    if (material.type == MaterialType::metal) {
+    if (material.type == MaterialType::Metal) {
         glm::vec3 reflect = glm::reflect(glm::normalize(ray.direction), payload.wordNormal);
         ray.direction     = reflect + material.fuzz * pbr::RandomUnitSphereDir();
     }
 
-    if (material.type == MaterialType::dielectric) {
+    if (material.type == MaterialType::Dielectric) {
         float refractionRatio = 1.5f;
         if (payload.frontFace) { refractionRatio = 1.0f / refractionRatio; }
         glm::vec3 unit = glm::normalize(ray.direction);

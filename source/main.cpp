@@ -10,10 +10,10 @@ static constexpr int       imageHeight = 600, imageWidth = static_cast<int>(imag
 Scene CreateScene() {
     Scene scene;
     
-    Material red   = {glm::vec3(.65f, .05f, .05f), black, 0, MaterialType::diffuse};
-    Material white = {glm::vec3(.73, .73, .73), black, 0, MaterialType::diffuse};
-    Material green = {glm::vec3(.12, .45, .15), black, 0, MaterialType::diffuse};
-    Material light = {{1.0f, 1.0f, 1.0f}, {15.0f, 15.0f, 15.0f}, 0, MaterialType::light};
+    Material red   = {glm::vec3(.65f, .05f, .05f), black, 0, MaterialType::Diffuse};
+    Material white = {glm::vec3(.73, .73, .73), black, 0, MaterialType::Diffuse};
+    Material green = {glm::vec3(.12, .45, .15), black, 0, MaterialType::Diffuse};
+    Material light = {{1.0f, 1.0f, 1.0f}, {15.0f, 15.0f, 15.0f}, 0, MaterialType::Light};
 
     scene.AddMaterial(red);
     scene.AddMaterial(white); 
@@ -45,7 +45,7 @@ int main(int argc, char** args) {
     auto renderer = Renderer(imageWidth, imageHeight);
     // bind scene and camera
     renderer.BindScene(CreateScene());
-    renderer.BindCamera(std::make_shared<Camera>(cameraOrigin, lookat, updir, aspect, verticalFov));
+    renderer.BindCamera(std::make_unique<Camera>(cameraOrigin, lookat, updir, aspect, verticalFov));
     // start render
     renderer.Render();
     return 0;

@@ -2,9 +2,10 @@
 
 #include <memory>
 
-#include <SDL.h>
 #include <stdint.h>
 #include <vector>
+
+#include <SDL.h>
 
 #include "camera.h"
 #include "geometry.h"
@@ -18,7 +19,7 @@ public:
     void Render();
     void OnResize(uint32_t width, uint32_t height);
     void BindScene(const Scene& scene) { m_activeScene = std::make_shared<Scene>(scene); }
-    void BindCamera(std::shared_ptr<Camera> camera) {m_camera = camera;}
+    void BindCamera(std::unique_ptr<Camera> camera) { m_camera = std::move(camera); }
 
 private:
     int  Init();
@@ -26,7 +27,7 @@ private:
     void DrawPixel(int x, int y, const glm::vec4& color);
     void PixelShader(uint32_t x, uint32_t y, float scale);
 
-    glm::vec3  RayColor(Ray& ray);
+    glm::vec3 RayColor(Ray& ray);
     Renderer()                                 = delete;
     Renderer(const Renderer& other)            = delete;
     Renderer& operator=(const Renderer& other) = delete;
@@ -41,6 +42,6 @@ private:
     SDL_Texture*            m_swapBuffer;
     uint32_t*               m_frameBuffer;
     std::vector<glm::vec3>  m_colorBuffer;
-    std::shared_ptr<Camera> m_camera;
+    std::unique_ptr<Camera> m_camera;
     std::shared_ptr<Scene>  m_activeScene;
 };
